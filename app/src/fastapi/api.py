@@ -38,6 +38,24 @@ async def create_product(product: ProductIn):
     return response
 
 
+@app.get("/products/", status_code=HTTPStatus.OK, response_model=List[ProductOut])
+async def get_products():
+    query = select(Product)
+    with Session(engine) as session:
+        products = session.scalars(query).all()
+        data = []
+        for product in products:
+            data.append(ProductOut(
+                id=product.id,
+                brand=product.brand,
+                type=product.type,
+                calories=product.calories,
+                saturated=product.saturated,
+                carbohydrates=product.carbohydrates,
+            ))
+    return data
+
+
 @app.put("/product/{product_id}", status_code=HTTPStatus.OK, response_model=ProductOut,
          responses={404: {"description": RESOURCE_NOT_FOUND}})
 async def modify_product(product_id: str, partial_product: ProductModify):
@@ -66,6 +84,22 @@ async def create_store(store: StoreIn):
     return response
 
 
+@app.get("/stores/", status_code=HTTPStatus.OK, response_model=List[StoreOut])
+async def get_stores():
+    query = select(Store)
+    with Session(engine) as session:
+        stores = session.scalars(query).all()
+        data = []
+        for store in stores:
+            data.append(StoreOut(
+                id=store.id,
+                name=store.name,
+                address=store.address,
+                opening_hours=store.opening_hours
+            ))
+    return data
+
+
 @app.post("/stores/{store_id}/products/{product_id}/", status_code=HTTPStatus.CREATED, response_model=PriceOut,
           responses={404: {"description": RESOURCE_NOT_FOUND}, 409: {"description": ALREADY_EXISTS}})
 async def create_price(store_id: str, product_id: str, price: PriceIn):
@@ -89,10 +123,15 @@ async def create_price(store_id: str, product_id: str, price: PriceIn):
     return response
 
 
-@app.get("/stores/{store_id}/products/", status_code=HTTPStatus.OK, response_model=List[ProductWithPrice])
+@app.get("/stores/{store_id}/products/", status_code=HTTPStatus.OK, response_model=List[ProductWithPrice],
+         responses={404: {"description": RESOURCE_NOT_FOUND}})
 async def get_products_for_store(store_id: str):
+    query_store = select(Store).where(Store.id == store_id)
     query_ps = select(ProductStore).where(ProductStore.store_id == store_id)
     with Session(engine) as session:
+        s = session.scalar(query_store)
+        if not s:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=RESOURCE_NOT_FOUND)
         list_ps = session.scalars(query_ps).all()
         data = []
         for ps in list_ps:

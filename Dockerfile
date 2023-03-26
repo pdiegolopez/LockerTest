@@ -19,5 +19,6 @@ RUN chown -R www-data:www-data /code
 USER www-data
 EXPOSE 8000
 ENV PYTHONPATH "/code"
+ENV APP_DATA_STORAGE "/code/app/data"
 
 CMD ["uvicorn", "app.src.fastapi.api:app", "--host", "0.0.0.0", "--port", "8000"]

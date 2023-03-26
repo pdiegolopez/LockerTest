@@ -35,10 +35,16 @@ que ya tiene las librerías necesarias instaladas. En otra terminal y
 con el servicio Rest API levantado ejecutar lo siguiente.
 
 ```commandline
-docker run -it --rm app python3 /code/app/src/load_data.py
+docker run -it --rm --network="host" app python3 /code/app/src/load_data.py
 ```
 
+Una vez realizada la carga de datos se podrá realizar una consulta de los
+productos y tiendas en sus respectivos endpoints GET de la Rest API
+
 ### Generar datos en csv
+Este programa es el utilizado por el programa anterior para generar una serie
+de datos aleatorios. Cada ejecución genera datos diferentes.
+
 Para ejecutar este programa y obtener los datos es recomendable ejecutar
 la imagen docker con un nombre de contenedor para poder obtener los ficheros
 
